@@ -25,21 +25,21 @@ function App() {
 			const previousOutputMessage: Message = {
 				hidden: true,
 				role: "user",
-				content: `To my previous message, you responded with this code: ${output}. I want you to continue building on that code. I want you to ${prompt}`,
+				content: `To my previous message, you responded with this code: ${output}. I want you to continue building on that code.`,
 				timestamp: new Date(),
 			};
 
 			history.push(previousOutputMessage);
-		} else {
-			const message: Message = {
-				content: prompt,
-				role: "user",
-				timestamp: new Date(),
-				hidden: false,
-			};
-
-			history.push(message);
 		}
+
+		const message: Message = {
+			content: prompt,
+			role: "user",
+			timestamp: new Date(),
+			hidden: false,
+		};
+
+		history.push(message);
 
 		setMessages(history);
 		setPrompt("");
@@ -58,6 +58,7 @@ function App() {
 				setOutput({
 					name: response.body.name,
 					code: fixOutput(response.body.code),
+					timestamp: response.body.timestamp,
 				});
 				return;
 			} else if (response.errorCode === "INVALID_JSON") {
@@ -80,6 +81,7 @@ function App() {
 					setOutput({
 						name: response.body.name,
 						code: fixOutput(response.body.code),
+						timestamp: response.body.timestamp,
 					});
 					return;
 				}
@@ -138,7 +140,7 @@ function App() {
 					{output && (
 						<>
 							<div className="row-span-2 overflow-auto">
-								<ErrorBoundary>
+								<ErrorBoundary key={output.timestamp.getTime()}>
 									<Preview value={output.code} name={output.name} />
 								</ErrorBoundary>
 							</div>

@@ -13,6 +13,7 @@ interface ChatStreamingParams {
 export interface ChatResult {
 	code: string;
 	name: string;
+	timestamp: Date;
 }
 
 export async function chat(
@@ -23,7 +24,7 @@ export async function chat(
 > {
 	const functionName = "create-react-component";
 	const response = await openai.chat.completions.create({
-		model: "gpt-4",
+		model: "gpt-3.5-turbo",
 		messages: [
 			{
 				role: "system",
@@ -61,10 +62,13 @@ export async function chat(
 
 	if (args) {
 		try {
-			const data = JSON.parse(args) as ChatResult;
+			const data = JSON.parse(args) as Omit<ChatResult, "timestamp">;
 			return {
 				success: true,
-				body: data,
+				body: {
+					...data,
+					timestamp: new Date(),
+				},
 			};
 		} catch (err: unknown) {
 			if (err instanceof Error) {
