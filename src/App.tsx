@@ -25,21 +25,22 @@ function App() {
 			const previousOutputMessage: Message = {
 				hidden: true,
 				role: "user",
-				content: `To my previous message, you responded with this code: ${output}`,
+				content: `To my previous message, you responded with this code: ${output}. I want you to continue building on that code. I want you to ${prompt}`,
 				timestamp: new Date(),
 			};
 
 			history.push(previousOutputMessage);
+		} else {
+			const message: Message = {
+				content: prompt,
+				role: "user",
+				timestamp: new Date(),
+				hidden: false,
+			};
+
+			history.push(message);
 		}
 
-		const message: Message = {
-			content: prompt,
-			role: "user",
-			timestamp: new Date(),
-			hidden: false,
-		};
-
-		history.push(message);
 		setMessages(history);
 		setPrompt("");
 		setLoading(true);
