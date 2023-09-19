@@ -2,28 +2,23 @@ import OpenAI from "openai";
 import { SYSTEM_PROMPT } from "./prompt";
 
 const openai = new OpenAI({
-	apiKey: "",
+	apiKey: import.meta.env.VITE_OPENAI_API_KEY,
 	dangerouslyAllowBrowser: true,
 });
-
-interface MessageChunk {
-	content: string;
-}
 
 interface ChatStreamingParams {
 	messages: OpenAI.Chat.ChatCompletionMessageParam[];
 }
 
-interface ChatResult {
+export interface ChatResult {
 	code: string;
-	followUpQuestion: string;
+	name: string;
 }
 
 export async function chat(params: ChatStreamingParams): Promise<ChatResult> {
-	console.log(params);
-	const functionName = "create-tailwind-html-component";
+	const functionName = "create-react-component";
 	const response = await openai.chat.completions.create({
-		model: "gpt-3.5-turbo",
+		model: "gpt-4",
 		messages: [
 			{
 				role: "system",
@@ -41,15 +36,14 @@ export async function chat(params: ChatStreamingParams): Promise<ChatResult> {
 						code: {
 							type: "string",
 							description:
-								"HTML code for a Tailwind component and all quotes are escaped",
+								"React code for a component. Special characters should be escaped so that the value can be parsed as JSON",
 						},
-						followUpQuestion: {
+						name: {
 							type: "string",
-							description:
-								"Follow up question to ask whether the user is happy with the tailwind component",
+							description: "Name of the component",
 						},
 					},
-					required: ["code", "followUpQuestion"],
+					required: ["code", "name"],
 				},
 			},
 		],
