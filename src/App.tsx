@@ -53,7 +53,38 @@ function App() {
 
 			console.log(response);
 
-			setOutput({ name: response.name, code: fixOutput(response.code) });
+			if (response.success) {
+				setOutput({
+					name: response.body.name,
+					code: fixOutput(response.body.code),
+				});
+				return;
+			} else if (response.errorCode === "INVALID_JSON") {
+				const response = await chat({
+					messages: history
+						.map<ChatCompletionMessageParam>((it) => {
+							const { timestamp: _timestamp, hidden: _hidden, ...rest } = it;
+							return rest;
+						})
+						.concat([
+							{
+								content:
+									"The previous response included invalid JSON. Can you try again?",
+								role: "user",
+							},
+						]),
+				});
+
+				if (response.success) {
+					setOutput({
+						name: response.body.name,
+						code: fixOutput(response.body.code),
+					});
+					return;
+				}
+			}
+
+			throw new Error("Something went wrong");
 		} catch (e) {
 			console.error(e);
 		} finally {

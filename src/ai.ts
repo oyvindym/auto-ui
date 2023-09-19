@@ -15,7 +15,12 @@ export interface ChatResult {
 	name: string;
 }
 
-export async function chat(params: ChatStreamingParams): Promise<ChatResult> {
+export async function chat(
+	params: ChatStreamingParams,
+): Promise<
+	| { success: true; body: ChatResult }
+	| { success: false; errorCode: "INVALID_JSON" | "UNKNOWN" | "NO_ARGUMENTS" }
+> {
 	const functionName = "create-react-component";
 	const response = await openai.chat.completions.create({
 		model: "gpt-4",
@@ -55,10 +60,35 @@ export async function chat(params: ChatStreamingParams): Promise<ChatResult> {
 	const args = response.choices[0].message.function_call?.arguments;
 
 	if (args) {
-		return JSON.parse(args) as ChatResult;
+		try {
+			const data = JSON.parse(args) as ChatResult;
+			return {
+				success: true,
+				body: data,
+			};
+		} catch (err: unknown) {
+			if (err instanceof Error) {
+				if (/bad\scontrol\scharacter/i.test(err.message)) {
+					return {
+						success: false,
+						errorCode: "INVALID_JSON",
+					};
+				} else {
+					return {
+						success: false,
+						errorCode: "UNKNOWN",
+					};
+				}
+			} else {
+				throw err;
+			}
+		}
 	}
 
-	throw new Error("No arguments returned ");
+	return {
+		success: false,
+		errorCode: "NO_ARGUMENTS",
+	};
 }
 
 export const fixOutput = (code: string): string =>
